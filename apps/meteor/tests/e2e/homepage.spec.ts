@@ -200,7 +200,7 @@ test.describe.serial('homepage', () => {
 					expect((await api.post('/settings/Layout_Custom_Body_Only', { value: false })).status()).toBe(200);
 				});
 
-				test.only('expect default layout not be visible and custom body visible', async () => {
+				test('expect default layout not be visible and custom body visible', async () => {
 					await test.step('expect default layout to not be visible', async () => {
 						await expect(
 							regularUserPage.getByRole('main').getByRole('heading', { level: 2, name: 'Welcome to Rocket.chat', exact: true }),
