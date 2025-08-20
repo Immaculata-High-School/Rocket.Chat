@@ -152,7 +152,7 @@ test.describe.serial('homepage', () => {
 				expect((await api.post('/settings/Layout_Home_Title', { value: 'NewTitle' })).status()).toBe(200);
 
 				await regularUserPage.goto('/home');
-				await regularUserPage.getByRole('main').getByRole('heading', { level: 1, name: 'Home', exact: true }).waitFor();
+				await regularUserPage.getByRole('main').getByRole('heading', { level: 1, name: 'NewTitle', exact: true }).waitFor();
 			});
 
 			test.afterAll(async ({ api }) => {
