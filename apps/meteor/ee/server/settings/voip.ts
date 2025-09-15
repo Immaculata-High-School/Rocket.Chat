@@ -6,6 +6,7 @@ export function addSettings(): Promise<void> {
 			{
 				enterprise: true,
 				modules: ['teams-voip'],
+				alert: 'VoIP_TeamCollab_Beta_Alert',
 			},
 			async function () {
 				await this.add('VoIP_TeamCollab_FreeSwitch_Host', '', {
