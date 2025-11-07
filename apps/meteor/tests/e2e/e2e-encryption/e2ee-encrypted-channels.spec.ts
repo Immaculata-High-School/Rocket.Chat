@@ -5,7 +5,6 @@ import { HomeChannel } from '../page-objects';
 import { CreateE2EEChannel } from '../page-objects/fragments/e2ee';
 import { deleteRoom } from '../utils/create-target-channel';
 import { preserveSettings } from '../utils/preserveSettings';
-import { resolvePrivateRoomId } from '../utils/resolve-room-id';
 import { test, expect } from '../utils/test';
 
 const settingsList = [
@@ -152,8 +151,7 @@ test.describe('E2EE Encrypted Channels', () => {
 		await expect(poHomeChannel.toastSuccess).toBeVisible();
 		await poHomeChannel.dismissToast();
 
-		const roomId = await resolvePrivateRoomId(page, channelName);
-		createdChannels.push({ name: channelName, id: roomId });
+		await createE2EEChannel.resolveAndStore(channelName, createdChannels);
 
 		await poHomeChannel.tabs.kebab.click();
 		// TODO(@jessicaschelly/@dougfabris): fix this flaky behavior
@@ -255,8 +253,7 @@ test.describe('E2EE Encrypted Channels', () => {
 		await poHomeChannel.dismissToast();
 
 		// Track channel for cleanup
-		const roomId = await resolvePrivateRoomId(page, channelName);
-		createdChannels.push({ name: channelName, id: roomId });
+		await createE2EEChannel.resolveAndStore(channelName, createdChannels);
 
 		// Send Unencrypted Messages
 		await poHomeChannel.content.sendMessage('first unencrypted message');
