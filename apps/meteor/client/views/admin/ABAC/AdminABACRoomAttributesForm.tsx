@@ -122,7 +122,7 @@ const AdminABACRoomAttributesForm = ({ onSave, onCancel, description }: AdminABA
 								lockedAttributesFields.length + fields.length >= 10
 							}
 						>
-							{t('Add Value')}
+							{t('Add_Value')}
 						</Button>
 					</Field>
 				</Box>
