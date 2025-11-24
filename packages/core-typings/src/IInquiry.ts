@@ -61,7 +61,12 @@ export interface ILivechatInquiryRecord extends IRocketChatRecord {
 	estimatedWaitingTimeQueue: IOmnichannelServiceLevelAgreements['dueTimeInMinutes'];
 }
 
-export const isLivechatInquiryRecord = (record: Partial<ISubscription>): record is ILivechatInquiryRecord => 'status' in record;
+export const isLivechatInquiryRecord = (
+	record: Partial<ISubscription> | Partial<ILivechatInquiryRecord>,
+): record is ILivechatInquiryRecord =>
+	'status' in record &&
+	typeof record.status === 'string' &&
+	Object.values(LivechatInquiryStatus).includes(record.status as LivechatInquiryStatus);
 
 export type InquiryWithAgentInfo = Pick<ILivechatInquiryRecord, '_id' | 'rid' | 'name' | 'ts' | 'status' | 'department' | 'v'> & {
 	position?: number;
