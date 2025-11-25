@@ -1097,14 +1097,6 @@ const roomInviteEndpoints = API.v1.post(
 	async function action() {
 		const { subscriptionId, action } = this.bodyParams;
 
-		if (!subscriptionId) {
-			return API.v1.failure({ error: 'subscriptionId is required' });
-		}
-
-		if (action !== 'accept' && action !== 'reject') {
-			return API.v1.failure({ error: 'action must be either "accept" or "reject"' });
-		}
-
 		try {
 			await FederationMatrix.handleInvite(subscriptionId, this.userId, action);
 			return API.v1.success();
