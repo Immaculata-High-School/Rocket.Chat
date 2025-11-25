@@ -584,7 +584,7 @@ export class FederationMatrix extends ServiceClass implements IFederationMatrixS
 				}),
 			);
 		} catch (error) {
-			this.logger.error('Failed to invite an user to Matrix:', error);
+			this.logger.error('Failed to invite a user to Matrix:', error);
 			throw error;
 		}
 	}
