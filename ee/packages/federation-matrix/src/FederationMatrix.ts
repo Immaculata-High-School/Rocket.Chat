@@ -840,7 +840,7 @@ export class FederationMatrix extends ServiceClass implements IFederationMatrixS
 	}
 
 	async notifyUserTyping(rid: string, user: string, isTyping: boolean) {
-		if (!this.processEDUTyping || !user || !rid) {
+		if (!this.processEDUTyping) {
 			return;
 		}
 
