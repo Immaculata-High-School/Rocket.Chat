@@ -1,11 +1,11 @@
-import { FederationMatrix } from '@rocket.chat/core-services';
+import { Authorization, FederationMatrix } from '@rocket.chat/core-services';
 import { isEditedMessage, type IMessage, type IRoom, type IUser } from '@rocket.chat/core-typings';
 import { Rooms } from '@rocket.chat/models';
 
 import { callbacks } from '../../../../lib/callbacks';
 import { afterLeaveRoomCallback } from '../../../../lib/callbacks/afterLeaveRoomCallback';
 import { afterRemoveFromRoomCallback } from '../../../../lib/callbacks/afterRemoveFromRoomCallback';
-import { beforeAddUsersToRoom } from '../../../../lib/callbacks/beforeAddUserToRoom';
+import { beforeAddUsersToRoom, beforeAddUserToRoom } from '../../../../lib/callbacks/beforeAddUserToRoom';
 import { beforeChangeRoomRole } from '../../../../lib/callbacks/beforeChangeRoomRole';
 import { FederationActions } from '../../../../server/services/room/hooks/BeforeFederationActions';
 
@@ -200,4 +200,22 @@ callbacks.add(
 	},
 	callbacks.priority.HIGH,
 	'federation-matrix-after-create-direct-room',
+);
+
+beforeAddUserToRoom.add(
+	async ({ user, inviter }, room) => {
+		if (!user.username || !inviter) {
+			return;
+		}
+
+		if (FederationActions.shouldPerformFederationAction(room)) {
+			if (!(await Authorization.hasPermission(user._id, 'access-federation'))) {
+				throw new Meteor.Error('error-not-authorized-federation', 'Not authorized to access federation');
+			}
+
+			await FederationMatrix.inviteUsersToRoom(room, [user.username], inviter);
+		}
+	},
+	callbacks.priority.MEDIUM,
+	'native-federation-on-before-add-users-to-room',
 );
