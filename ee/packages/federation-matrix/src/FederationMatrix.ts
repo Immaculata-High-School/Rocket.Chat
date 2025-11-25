@@ -214,7 +214,6 @@ export class FederationMatrix extends ServiceClass implements IFederationMatrixS
 			throw new FederationValidationError(
 				'POLICY_DENIED',
 				`Invalid federated username format: ${usernames.filter((username) => !validateFederatedUsername(username)).join(', ')}. Federated usernames must follow the format @username:domain.com`,
-				403,
 			);
 		}
 
