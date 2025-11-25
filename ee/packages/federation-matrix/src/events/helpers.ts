@@ -5,7 +5,7 @@ import type { UserID, RoomID } from '@rocket.chat/federation-sdk';
 import { Logger } from '@rocket.chat/logger';
 import { Rooms, Users } from '@rocket.chat/models';
 
-import { createOrUpdateFederatedUser, extractDomainFromMatrixUserId, getUsernameServername } from '../FederationMatrix';
+import { createOrUpdateFederatedUser, getUsernameServername } from '../FederationMatrix';
 
 const logger = new Logger('federation-matrix:helpers');
 
@@ -55,7 +55,7 @@ export async function getOrCreateFederatedRoom(
 	_inviterMatrixId: UserID,
 ): Promise<IRoom | null> {
 	try {
-		let room = await Rooms.findOne({ 'federation.mrid': roomName });
+		const room = await Rooms.findOne({ 'federation.mrid': roomName });
 		if (room) {
 			return room;
 		}
@@ -80,15 +80,6 @@ export async function getOrCreateFederatedRoom(
 	} catch (error) {
 		logger.error(`Error getting or creating federated room ${roomName}:`, error);
 		return null;
-	}
-}
-
-export function extractDomainFromId(matrixId: string): string {
-	try {
-		return extractDomainFromMatrixUserId(matrixId);
-	} catch (error) {
-		logger.error(`Error extracting domain from Matrix ID ${matrixId}:`, error);
-		return '';
 	}
 }
 
