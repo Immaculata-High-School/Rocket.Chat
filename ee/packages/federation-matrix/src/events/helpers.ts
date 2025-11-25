@@ -82,13 +82,3 @@ export async function getOrCreateFederatedRoom(
 		return null;
 	}
 }
-
-export function extractUsernameFromMatrixId(matrixId: UserID): string {
-	try {
-		const parts = matrixId.substring(1).split(':');
-		return parts[0] || matrixId;
-	} catch (error) {
-		logger.error(`Error extracting username from Matrix ID ${matrixId}:`, error);
-		return matrixId;
-	}
-}
