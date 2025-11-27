@@ -13,13 +13,12 @@ import type {
 } from '@rocket.chat/core-typings';
 import { Emitter } from '@rocket.chat/emitter';
 
-import { getLicenseLimit } from './deprecated';
 import type { getAppsConfig, getMaxActiveUsers, getUnmodifiedLicenseAndModules } from './deprecated';
 import { DuplicatedLicenseError } from './errors/DuplicatedLicenseError';
 import { InvalidLicenseError } from './errors/InvalidLicenseError';
 import { NotReadyForValidation } from './errors/NotReadyForValidation';
 import type { onLicense } from './events/deprecated';
-import { behaviorTriggered, behaviorTriggeredToggled, licenseInvalidated, licenseValidated } from './events/emitter';
+import { behaviorTriggered, licenseInvalidated, licenseValidated } from './events/emitter';
 import type {
 	onBehaviorTriggered,
 	onInvalidFeature,
@@ -370,10 +369,8 @@ export abstract class LicenseManager extends Emitter<LicenseEvents> {
 		}
 	}
 
-	private triggerBehaviorEventsToggled(validationResult: BehaviorWithContext[]): void {
-		for (const { ...options } of validationResult) {
-			behaviorTriggeredToggled.call(this, { ...options });
-		}
+	private _triggerBehaviorEventsToggled(_validationResult: BehaviorWithContext[]): void {
+		// Unused - kept for API compatibility
 	}
 
 	public hasValidLicense(): boolean {
@@ -437,10 +434,10 @@ export abstract class LicenseManager extends Emitter<LicenseEvents> {
 	}
 
 	public async shouldPreventAction<T extends LicenseLimitKind>(
-		action: T,
-		extraCount = 0,
-		context: Partial<LimitContext<T>> = {},
-		{ suppressLog }: Pick<LicenseValidationOptions, 'suppressLog'> = {
+		_action: T,
+		_extraCount = 0,
+		_context: Partial<LimitContext<T>> = {},
+		_options: Pick<LicenseValidationOptions, 'suppressLog'> = {
 			suppressLog: process.env.LICENSE_VALIDATION_SUPPRESS_LOG !== 'false',
 		},
 	): Promise<boolean> {
@@ -448,21 +445,9 @@ export abstract class LicenseManager extends Emitter<LicenseEvents> {
 		return false;
 	}
 
-	private consolidateBehaviorState<T extends LicenseLimitKind>(action: T, behavior: LicenseBehavior, triggered: boolean): boolean {
-		// check if the behavior changed
-		const state = this.states.get(behavior) ?? new Map<LicenseLimitKind, boolean>();
-
-		const currentState = state.get(action) ?? false;
-
-		if (currentState === triggered) {
-			return false;
-		}
-
-		// if it changed, update the state
-		state.set(action, triggered);
-
-		this.states.set(behavior, state);
-		return true;
+	private _consolidateBehaviorState<T extends LicenseLimitKind>(_action: T, _behavior: LicenseBehavior, _triggered: boolean): boolean {
+		// Unused - kept for API compatibility
+		return false;
 	}
 
 	public async getInfo({

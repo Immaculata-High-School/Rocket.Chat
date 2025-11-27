@@ -3,8 +3,62 @@
 </p>
 
 <h1 align="center">
-  The ultimate secure open-source solution for team communications
+  Rocket.Chat - ByteRoots Modified Edition
 </h1>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/modified%20by-ByteRoots-blue">
+  <img src="https://img.shields.io/badge/support%20until-Late%202026-green">
+  <img src="https://img.shields.io/badge/license-MIT-green">
+</p>
+
+---
+
+## ⚠️ About This Fork
+
+This is a **modified version of Rocket.Chat** customized for the needs of **ByteRoots**, a nonprofit organization (or future nonprofit). This fork includes the following modifications:
+
+### 🔓 Enterprise Features Unlocked
+- All enterprise modules enabled by default
+- No license restrictions on features
+- Unlimited private apps and marketplace apps
+- All user and feature limits removed
+
+### 🎨 Branding Changes
+- Removed "Powered by Rocket.Chat" watermark from sidebar
+- Shows as "Enterprise" edition in admin panel
+
+### 🛠️ Infrastructure Changes
+- Custom Docker build pipeline pushing to GitHub Container Registry
+- Simplified GitHub Actions workflow
+- Removed unnecessary CI/CD workflows and documentation
+
+### 📅 Support Timeline
+This modified version will be maintained and supported through **late 2026**.
+
+### 🏢 Intended Use
+This fork is intended for use by:
+- ByteRoots nonprofit organization
+- Other nonprofit organizations with similar needs
+- Educational institutions
+- Small organizations that need enterprise features without enterprise costs
+
+---
+
+## ⚖️ Legal Notice
+
+This fork is based on the open-source Rocket.Chat project under the MIT license. While enterprise features have been unlocked, organizations using this fork should:
+- Comply with all applicable laws and regulations
+- Consider supporting the original Rocket.Chat project
+- Use this software responsibly
+
+---
+
+# Original Rocket.Chat Documentation
+
+<h2 align="center">
+  The ultimate secure open-source solution for team communications
+</h2>
 
 <p align="center">
   <img src="https://img.shields.io/github/v/release/RocketChat/Rocket.Chat?label=version">

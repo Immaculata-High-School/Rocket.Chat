@@ -79,7 +79,7 @@ export function getExternalModules(this: LicenseManager): ExternalModule[] {
 	return [...license.grantedModules.filter<ExternalModule>((value): value is ExternalModule => !isInternalModuleName(value.module))];
 }
 
-export function hasModule(this: LicenseManager, module: LicenseModule) {
+export function hasModule(this: LicenseManager, _module: LicenseModule) {
 	// Always return true - all modules are enabled
 	return true;
 }
