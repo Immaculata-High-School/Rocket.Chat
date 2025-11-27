@@ -519,29 +519,28 @@ export abstract class LicenseManager extends Emitter<LicenseEvents> {
 				},
 				grantedTo: {
 					name: this.workspaceUrl || 'ByteRoots Workspace',
-					address: this.workspaceUrl || '',
+					company: 'ByteRoots',
+					email: '',
 				},
 				legalText: '',
 				notes: 'Enterprise features enabled by default',
 				tags: [{ name: 'Enterprise', color: '#5154ec' }],
 			},
 			validation: {
-				serverUrls: [],
-				serverVersions: {
-					value: '*',
-				},
+				serverUrls: [{ value: '*', type: 'regex' }],
+				serverVersions: [{ value: '*' }],
 				serverUniqueId: '*',
 				cloudWorkspaceId: '*',
 				validPeriods: [],
 				legalTextAgreement: {
 					type: 'accepted',
-					acceptedVia: 'default',
+					acceptedVia: 'cloud',
 				},
 				statisticsReport: {
 					required: false,
 				},
 			},
-			grantedModules: activeModules.map((module) => ({ module })),
+			grantedModules: activeModules.map((module) => ({ module, external: false as const })),
 			limits: {
 				activeUsers: [{ max: -1, behavior: 'prevent_action' }],
 				guestUsers: [{ max: -1, behavior: 'prevent_action' }],
