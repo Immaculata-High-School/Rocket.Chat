@@ -369,10 +369,6 @@ export abstract class LicenseManager extends Emitter<LicenseEvents> {
 		}
 	}
 
-	private _triggerBehaviorEventsToggled(_validationResult: BehaviorWithContext[]): void {
-		// Unused - kept for API compatibility
-	}
-
 	public hasValidLicense(): boolean {
 		// Always return true - enterprise is always enabled
 		return true;
@@ -442,11 +438,6 @@ export abstract class LicenseManager extends Emitter<LicenseEvents> {
 		},
 	): Promise<boolean> {
 		// Never prevent any action - all limits are removed
-		return false;
-	}
-
-	private _consolidateBehaviorState<T extends LicenseLimitKind>(_action: T, _behavior: LicenseBehavior, _triggered: boolean): boolean {
-		// Unused - kept for API compatibility
 		return false;
 	}
 

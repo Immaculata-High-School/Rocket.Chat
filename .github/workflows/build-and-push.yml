@@ -10,11 +10,13 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ghcr.io/immaculata-high-school/rocket.chat
+  TURBO_TELEMETRY_DISABLED: 1
 
 jobs:
   build:
     name: Build and Push
     runs-on: ubuntu-24.04
+    timeout-minutes: 60
 
     permissions:
       contents: read
@@ -28,7 +30,7 @@ jobs:
           android: true
           dotnet: true
           haskell: true
-          large-packages: true
+          large-packages: false
           docker-images: true
           swap-storage: false
 
@@ -60,16 +62,13 @@ jobs:
         with:
           deno-version: ${{ steps.versions.outputs.deno-version }}
 
-      - name: Install dependencies
-        run: yarn install
-
-      - name: Cache vite
+      - name: Turbo Cache
         uses: actions/cache@v4
         with:
-          path: ./node_modules/.vite
-          key: vite-local-cache-${{ runner.OS }}-${{ hashFiles('package.json') }}
+          path: .turbo
+          key: turbo-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
-            vite-local-cache-${{ runner.os }}-
+            turbo-${{ runner.os }}-
 
       - name: Cache meteor local
         uses: actions/cache@v4
@@ -102,8 +101,13 @@ jobs:
           fi
           command -v meteor >/dev/null 2>&1 || curl https://install.meteor.com | sed s/--progress-bar/-sL/g | /bin/sh
 
+      - name: Install dependencies
+        run: yarn install --immutable
+
       - name: Build Rocket.Chat
         run: yarn build:ci
+        env:
+          NODE_OPTIONS: "--max_old_space_size=4096"
 
       - name: Prepare build
         run: |

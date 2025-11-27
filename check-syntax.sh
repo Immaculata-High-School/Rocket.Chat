@@ -1,12 +1,13 @@
 #!/bin/bash
 
-# Syntax and TypeScript Check Script for Rocket.Chat
-# Run this before deploying to catch errors early
+# Quick Syntax Check Script for Rocket.Chat
+# Run this before committing to catch TypeScript errors early
+# This script does NOT install dependencies - it just checks syntax
 
 set -e
 
 echo "========================================"
-echo "  Rocket.Chat Syntax & Build Check"
+echo "  Quick TypeScript Syntax Check"
 echo "========================================"
 echo ""
 
@@ -22,76 +23,73 @@ if [ ! -f "package.json" ]; then
     exit 1
 fi
 
-echo -e "${YELLOW}Step 1: Installing dependencies...${NC}"
-yarn install --frozen-lockfile || yarn install
-echo -e "${GREEN}✓ Dependencies installed${NC}"
+echo -e "${YELLOW}Checking for common TypeScript errors...${NC}"
 echo ""
 
-echo -e "${YELLOW}Step 2: Checking TypeScript in ee/packages/license...${NC}"
-cd ee/packages/license
-if yarn tsc --noEmit; then
-    echo -e "${GREEN}✓ License package TypeScript check passed${NC}"
-else
-    echo -e "${RED}✗ License package TypeScript check failed${NC}"
-    exit 1
-fi
-cd ../../..
-echo ""
+# Check for unused variables (the most common issue)
+ERRORS_FOUND=0
 
-echo -e "${YELLOW}Step 3: Building license package...${NC}"
-if yarn workspace @rocket.chat/license build; then
-    echo -e "${GREEN}✓ License package build passed${NC}"
-else
-    echo -e "${RED}✗ License package build failed${NC}"
-    exit 1
-fi
-echo ""
+echo "Checking ee/packages/license/src/license.ts..."
 
-echo -e "${YELLOW}Step 4: Running ESLint on modified files...${NC}"
-# Check the specific files we modified
-FILES_TO_CHECK=(
-    "ee/packages/license/src/license.ts"
-    "ee/packages/license/src/modules.ts"
-    "ee/packages/license/src/tags.ts"
-    "ee/packages/license/src/validation/validateDefaultLimits.ts"
-    "apps/meteor/client/sidebar/footer/SidebarFooterWatermark.tsx"
-    "apps/meteor/client/sidebarv2/footer/SidebarFooterWatermark.tsx"
-)
-
-LINT_FAILED=0
-for file in "${FILES_TO_CHECK[@]}"; do
-    if [ -f "$file" ]; then
-        echo "  Checking $file..."
-        if yarn eslint "$file" --quiet 2>/dev/null; then
-            echo -e "    ${GREEN}✓ Passed${NC}"
-        else
-            echo -e "    ${YELLOW}⚠ Warnings (non-blocking)${NC}"
-        fi
+# Check for declared but never read errors
+if grep -n "private _[a-zA-Z]*\|private [a-zA-Z]*(" ee/packages/license/src/license.ts | grep -v "private _license\|private _unmodifiedLicense\|private _valid\|private _lockedLicense\|private workspaceUrl\|private states" > /tmp/unused_check.txt 2>/dev/null; then
+    if [ -s /tmp/unused_check.txt ]; then
+        echo -e "${YELLOW}  Warning: Found potentially unused private methods:${NC}"
+        cat /tmp/unused_check.txt
+        echo ""
     fi
-done
-echo ""
-
-echo -e "${YELLOW}Step 5: Full TypeScript check (this may take a while)...${NC}"
-if yarn typecheck 2>/dev/null || yarn turbo run typecheck 2>/dev/null; then
-    echo -e "${GREEN}✓ Full TypeScript check passed${NC}"
-else
-    echo -e "${YELLOW}⚠ TypeScript check had issues (may be pre-existing)${NC}"
 fi
+
+# Check for unused imports
+echo "Checking for unused imports..."
+UNUSED_IMPORTS=""
+
+# Check specific imports that have caused issues
+if grep -q "import.*getLicenseLimit.*from" ee/packages/license/src/license.ts 2>/dev/null; then
+    if ! grep -q "getLicenseLimit\(" ee/packages/license/src/license.ts 2>/dev/null; then
+        UNUSED_IMPORTS="${UNUSED_IMPORTS}getLicenseLimit "
+    fi
+fi
+
+if grep -q "import.*behaviorTriggeredToggled.*from" ee/packages/license/src/license.ts 2>/dev/null; then
+    if ! grep -q "behaviorTriggeredToggled\(" ee/packages/license/src/license.ts 2>/dev/null; then
+        UNUSED_IMPORTS="${UNUSED_IMPORTS}behaviorTriggeredToggled "
+    fi
+fi
+
+if [ -n "$UNUSED_IMPORTS" ]; then
+    echo -e "${RED}  Error: Found unused imports: ${UNUSED_IMPORTS}${NC}"
+    ERRORS_FOUND=1
+fi
+
+# Check for underscore-prefixed unused methods that TypeScript still complains about
+echo "Checking for problematic underscore-prefixed methods..."
+if grep -q "_triggerBehaviorEventsToggled\|_consolidateBehaviorState" ee/packages/license/src/license.ts 2>/dev/null; then
+    echo -e "${RED}  Error: Found underscore-prefixed methods that should be removed:${NC}"
+    grep -n "_triggerBehaviorEventsToggled\|_consolidateBehaviorState" ee/packages/license/src/license.ts
+    ERRORS_FOUND=1
+fi
+
+# Check modules.ts
+echo "Checking ee/packages/license/src/modules.ts..."
+if grep -q "function hasModule.*module:" ee/packages/license/src/modules.ts 2>/dev/null; then
+    if ! grep -q "function hasModule.*_module:" ee/packages/license/src/modules.ts 2>/dev/null; then
+        echo -e "${YELLOW}  Warning: hasModule parameter 'module' should be '_module' to indicate unused${NC}"
+    fi
+fi
+
 echo ""
 
-echo -e "${YELLOW}Step 6: Testing license package build output...${NC}"
-if [ -d "ee/packages/license/dist" ]; then
-    echo -e "${GREEN}✓ License package dist folder exists${NC}"
-    ls -la ee/packages/license/dist/
-else
-    echo -e "${RED}✗ License package dist folder not found${NC}"
+if [ $ERRORS_FOUND -eq 1 ]; then
+    echo "========================================"
+    echo -e "${RED}  Errors found! Fix before pushing.${NC}"
+    echo "========================================"
     exit 1
+else
+    echo "========================================"
+    echo -e "${GREEN}  Quick check passed!${NC}"
+    echo "========================================"
+    echo ""
+    echo "Note: This is a quick check. Full TypeScript compilation"
+    echo "happens during the GitHub Action build."
 fi
-echo ""
-
-echo "========================================"
-echo -e "${GREEN}  All checks completed!${NC}"
-echo "========================================"
-echo ""
-echo "You can now commit and push your changes."
-echo ""
