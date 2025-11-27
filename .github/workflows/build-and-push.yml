@@ -1,0 +1,137 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ghcr.io/immaculata-high-school/rocket.chat
+
+jobs:
+  build:
+    name: Build and Push
+    runs-on: ubuntu-24.04
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set Swap Space
+        uses: pierotofy/set-swap-space@master
+        with:
+          swap-size-gb: 4
+
+      - name: Get versions from package.json
+        id: versions
+        run: |
+          NODE_VERSION=$(node -p "require('./package.json').engines.node")
+          echo "node-version=${NODE_VERSION}" >> $GITHUB_OUTPUT
+          
+          DENO_VERSION=$(awk '$1=="deno"{ print $2 }' .tool-versions)
+          echo "deno-version=${DENO_VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ steps.versions.outputs.node-version }}
+          cache: 'yarn'
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: ${{ steps.versions.outputs.deno-version }}
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Cache vite
+        uses: actions/cache@v4
+        with:
+          path: ./node_modules/.vite
+          key: vite-local-cache-${{ runner.OS }}-${{ hashFiles('package.json') }}
+          restore-keys: |
+            vite-local-cache-${{ runner.os }}-
+
+      - name: Cache meteor local
+        uses: actions/cache@v4
+        with:
+          path: ./apps/meteor/.meteor/local
+          key: meteor-local-cache-${{ runner.OS }}-${{ hashFiles('apps/meteor/.meteor/versions') }}
+          restore-keys: |
+            meteor-local-cache-${{ runner.os }}-
+
+      - name: Cache meteor
+        uses: actions/cache@v4
+        with:
+          path: ~/.meteor
+          key: meteor-cache-${{ runner.OS }}-${{ hashFiles('apps/meteor/.meteor/release') }}
+          restore-keys: |
+            meteor-cache-${{ runner.os }}-
+
+      - name: Install Meteor
+        run: |
+          set +e
+          METEOR_SYMLINK_TARGET=$(readlink ~/.meteor/meteor)
+          METEOR_TOOL_DIRECTORY=$(dirname "$METEOR_SYMLINK_TARGET")
+          set -e
+          LAUNCHER=$HOME/.meteor/$METEOR_TOOL_DIRECTORY/scripts/admin/launch-meteor
+          if [ -e $LAUNCHER ]; then
+            echo "Cached Meteor bin found, restoring it"
+            sudo cp "$LAUNCHER" "/usr/local/bin/meteor"
+          else
+            echo "No cached Meteor bin found."
+          fi
+          command -v meteor >/dev/null 2>&1 || curl https://install.meteor.com | sed s/--progress-bar/-sL/g | /bin/sh
+
+      - name: Build Rocket.Chat
+        run: yarn build:ci
+
+      - name: Prepare build
+        run: |
+          cd /tmp/dist
+          tar czf /tmp/Rocket.Chat.tar.gz bundle
+
+      - name: Extract build for Docker
+        run: |
+          mkdir -p /tmp/build
+          cd /tmp/build
+          tar xzf /tmp/Rocket.Chat.tar.gz
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: /tmp/build
+          file: ${{ github.workspace }}/apps/meteor/.docker/Dockerfile.alpine
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
