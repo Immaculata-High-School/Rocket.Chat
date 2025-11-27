@@ -13,7 +13,8 @@ export const useUpsellActions = (hasLicenseModule = false) => {
 	const cloudWorkspaceHadTrial = useSetting('Cloud_Workspace_Had_Trial', false);
 
 	const { data } = useIsEnterprise();
-	const shouldShowUpsell = !data?.isEnterprise || !hasLicenseModule;
+	// Never show upsell - enterprise is always enabled (ByteRoots fork)
+	const shouldShowUpsell = false;
 
 	const openExternalLink = useExternalLink();
 	const manageSubscriptionUrl = useCheckoutUrl()({ target: 'upsell-modal', action: 'upgrade' });

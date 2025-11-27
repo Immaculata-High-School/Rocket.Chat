@@ -7,19 +7,13 @@ import tinykeys from 'tinykeys';
 
 import { SubscriptionCalloutLimits } from './SubscriptionCalloutLimits';
 import SubscriptionPageSkeleton from './SubscriptionPageSkeleton';
-import UpgradeButton from './components/UpgradeButton';
-import UpgradeToGetMore from './components/UpgradeToGetMore';
 import ActiveSessionsCard from './components/cards/ActiveSessionsCard';
 import ActiveSessionsPeakCard from './components/cards/ActiveSessionsPeakCard';
-import AppsUsageCard from './components/cards/AppsUsageCard';
 import CountMACCard from './components/cards/CountMACCard';
 import CountSeatsCard from './components/cards/CountSeatsCard';
 import FeaturesCard from './components/cards/FeaturesCard';
-import MACCard from './components/cards/MACCard';
 import PlanCard from './components/cards/PlanCard';
 import PlanCardCommunity from './components/cards/PlanCard/PlanCardCommunity';
-import SeatsCard from './components/cards/SeatsCard';
-import { useCancelSubscriptionModal } from './hooks/useCancelSubscriptionModal';
 import { useWorkspaceSync } from './hooks/useWorkspaceSync';
 import UiKitSubscriptionLicense from './surface/UiKitSubscriptionLicense';
 import { Page, PageScrollableContentWithShadow } from '../../../components/Page';
@@ -60,7 +54,8 @@ const SubscriptionPage = () => {
 	const showSubscriptionCallout = useDebouncedValue(subscriptionSuccess || syncLicenseUpdate.isPending, 10000);
 
 	const { license, limits, activeModules = [], cloudSyncAnnouncement } = licensesData || {};
-	const { isEnterprise = true } = enterpriseData || {};
+	// Always show as Enterprise (ByteRoots fork)
+	const isEnterprise = true;
 
 	const getKeyLimit = (key: 'monthlyActiveContacts' | 'activeUsers') => {
 		const { max, value } = limits?.[key] || {};
@@ -72,8 +67,6 @@ const SubscriptionPage = () => {
 
 	const macLimit = getKeyLimit('monthlyActiveContacts');
 	const seatsLimit = getKeyLimit('activeUsers');
-
-	const { isLoading: isCancelSubscriptionLoading, open: openCancelSubscriptionModal } = useCancelSubscriptionModal();
 
 	const handleSyncLicenseUpdate = useCallback(() => {
 		syncLicenseUpdate.mutate(undefined, {
@@ -109,9 +102,6 @@ const SubscriptionPage = () => {
 							{t('Sync_license_update')}
 						</Button>
 					)}
-					<UpgradeButton target='subscription_header' action={isEnterprise ? 'manage_subscription' : 'upgrade'} primary>
-						{t(isEnterprise ? 'Manage_subscription' : 'Upgrade')}
-					</UpgradeButton>
 				</ButtonGroup>
 			</PageHeaderNoShadow>
 			{cloudSyncAnnouncement && (
@@ -149,48 +139,23 @@ const SubscriptionPage = () => {
 
 								{seatsLimit.value !== undefined && (
 									<GridItem lg={6} xs={4} p={8} minHeight={260}>
-										{seatsLimit.max !== Infinity ? (
-											<SeatsCard value={seatsLimit.value} max={seatsLimit.max} hideManageSubscription={licensesData?.trial} />
-										) : (
-											<CountSeatsCard activeUsers={seatsLimit?.value} />
-										)}
+										<CountSeatsCard activeUsers={seatsLimit?.value} />
 									</GridItem>
 								)}
 
 								{macLimit.value !== undefined && (
 									<GridItem lg={6} xs={4} p={8} minHeight={260}>
-										{macLimit.max !== Infinity ? (
-											<MACCard max={macLimit.max} value={macLimit.value} hideManageSubscription={licensesData?.trial} />
-										) : (
-											<CountMACCard macsCount={macLimit.value} />
-										)}
+										<CountMACCard macsCount={macLimit.value} />
 									</GridItem>
 								)}
 
-								{!license && (
-									<>
-										{limits?.marketplaceApps !== undefined && (
-											<GridItem lg={4} xs={4} p={8} minHeight={260}>
-												<AppsUsageCard privateAppsLimit={limits?.privateApps} marketplaceAppsLimit={limits.marketplaceApps} />
-											</GridItem>
-										)}
-
-										<GridItem lg={4} xs={4} p={8} minHeight={260}>
-											<ActiveSessionsCard />
-										</GridItem>
-										<GridItem lg={4} xs={4} p={8} minHeight={260}>
-											<ActiveSessionsPeakCard />
-										</GridItem>
-									</>
-								)}
+								<GridItem lg={4} xs={4} p={8} minHeight={260}>
+									<ActiveSessionsCard />
+								</GridItem>
+								<GridItem lg={4} xs={4} p={8} minHeight={260}>
+									<ActiveSessionsPeakCard />
+								</GridItem>
 							</Grid>
-							<UpgradeToGetMore activeModules={activeModules} isEnterprise={isEnterprise}>
-								{Boolean(licensesData?.license?.information.cancellable) && (
-									<Button loading={isCancelSubscriptionLoading} secondary danger onClick={openCancelSubscriptionModal}>
-										{t('Cancel_subscription')}
-									</Button>
-								)}
-							</UpgradeToGetMore>
 						</Box>
 					</>
 				)}

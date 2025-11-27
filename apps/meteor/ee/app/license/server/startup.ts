@@ -12,6 +12,10 @@ import { settings } from '../../../../app/settings/server';
 import { callbacks } from '../../../../lib/callbacks';
 
 export const startLicense = async () => {
+	// Set Enterprise license status to Valid by default (ByteRoots fork)
+	(await Settings.updateValueById('Enterprise_License_Status', 'Valid')).modifiedCount &&
+		void notifyOnSettingChangedById('Enterprise_License_Status');
+
 	settings.watch<string>('Site_Url', (value) => {
 		if (value) {
 			void License.setWorkspaceUrl(value);

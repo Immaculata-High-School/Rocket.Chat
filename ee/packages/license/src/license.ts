@@ -451,7 +451,7 @@ export abstract class LicenseManager extends Emitter<LicenseEvents> {
 		license: boolean;
 	}): Promise<LicenseInfo> {
 		const externalModules = getExternalModules.call(this);
-		const license = this.getLicense();
+		const actualLicense = this.getLicense();
 
 		// Always return all modules as active (unlocked)
 		const activeModules: LicenseModule[] = [
@@ -500,8 +500,63 @@ export abstract class LicenseManager extends Emitter<LicenseEvents> {
 				[],
 		);
 
+		// Create a fake enterprise license if no actual license exists
+		// This ensures the UI shows Enterprise plan instead of Community
+		const fakeLicense: ILicenseV3 = {
+			version: '3.0',
+			information: {
+				id: 'enterprise-default',
+				autoRenew: false,
+				visualExpiration: 'never',
+				notifyAdminsAt: undefined,
+				notifyUsersAt: undefined,
+				trial: false,
+				offline: false,
+				createdAt: new Date().toISOString(),
+				grantedBy: {
+					method: 'manual',
+					seller: 'ByteRoots',
+				},
+				grantedTo: {
+					name: this.workspaceUrl || 'ByteRoots Workspace',
+					address: this.workspaceUrl || '',
+				},
+				legalText: '',
+				notes: 'Enterprise features enabled by default',
+				tags: [{ name: 'Enterprise', color: '#5154ec' }],
+			},
+			validation: {
+				serverUrls: [],
+				serverVersions: {
+					value: '*',
+				},
+				serverUniqueId: '*',
+				cloudWorkspaceId: '*',
+				validPeriods: [],
+				legalTextAgreement: {
+					type: 'accepted',
+					acceptedVia: 'default',
+				},
+				statisticsReport: {
+					required: false,
+				},
+			},
+			grantedModules: activeModules.map((module) => ({ module })),
+			limits: {
+				activeUsers: [{ max: -1, behavior: 'prevent_action' }],
+				guestUsers: [{ max: -1, behavior: 'prevent_action' }],
+				roomsPerGuest: [{ max: -1, behavior: 'prevent_action' }],
+				privateApps: [{ max: -1, behavior: 'prevent_action' }],
+				marketplaceApps: [{ max: -1, behavior: 'prevent_action' }],
+				monthlyActiveContacts: [{ max: -1, behavior: 'prevent_action' }],
+			},
+			cloudMeta: undefined,
+		};
+
+		const licenseToReturn = actualLicense || fakeLicense;
+
 		return {
-			license: (includeLicense && license) || undefined,
+			license: includeLicense ? licenseToReturn : undefined,
 			activeModules,
 			externalModules,
 			preventedActions: {

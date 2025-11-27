@@ -1,11 +1,8 @@
-import { Button } from '@rocket.chat/fuselage';
 import type { ButtonProps } from '@rocket.chat/fuselage/dist/components/Button/Button';
 import type { ReactElement } from 'react';
 import { memo } from 'react';
 
-import { useExternalLink } from '../../../../hooks/useExternalLink';
-import { useCheckoutUrl } from '../hooks/useCheckoutUrl';
-
+// ByteRoots fork: UpgradeButton is hidden since enterprise is always enabled
 const UpgradeButton = ({
 	children,
 	target = '_blank',
@@ -14,15 +11,9 @@ const UpgradeButton = ({
 }: Partial<ButtonProps> & {
 	target: string;
 	action: string;
-}): ReactElement => {
-	const handleOpenLink = useExternalLink();
-	const url = useCheckoutUrl()({ target, action });
-
-	return (
-		<Button icon='new-window' onClick={() => handleOpenLink(url)} {...props}>
-			{children}
-		</Button>
-	);
+}): ReactElement | null => {
+	// Never show upgrade button - enterprise is always enabled
+	return null;
 };
 
 export default memo(UpgradeButton);

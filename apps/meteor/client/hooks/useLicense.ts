@@ -70,11 +70,13 @@ export const useLicenseWithCloudAnnouncement = (params?: LicenseParams) => {
 };
 
 export const useHasLicense = (): UseQueryResult<boolean> => {
-	return useLicenseBase({ select: (data) => Boolean(data.license) });
+	// Always return true - license is always valid (ByteRoots fork)
+	return useLicenseBase({ select: () => true });
 };
 
 export const useLicenseName = (params?: LicenseParams) => {
-	return useLicenseBase({ params, select: (data) => data?.license.tags?.map((tag) => tag.name).join(' ') || 'Community' });
+	// Always return Enterprise - (ByteRoots fork)
+	return useLicenseBase({ params, select: () => 'Enterprise' });
 };
 
 export const useInvalidateLicense = () => {
