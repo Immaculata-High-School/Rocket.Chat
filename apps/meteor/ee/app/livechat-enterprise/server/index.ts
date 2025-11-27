@@ -1,4 +1,3 @@
-import { License } from '@rocket.chat/license';
 import { patchOmniCore } from '@rocket.chat/omni-core-ee';
 import { Meteor } from 'meteor/meteor';
 
@@ -31,18 +30,17 @@ import './business-hour';
 import './api';
 import { createDefaultPriorities } from './priorities';
 
+// Enterprise features always enabled - use static imports
+import './hooks';
+import './startup';
+import { createPermissions } from './permissions';
+import { createSettings } from './settings';
+import './lib/unit';
+
 patchOmniCore();
 
-await License.onLicense('livechat-enterprise', async () => {
-	require('./hooks');
-	await import('./startup');
-	const { createPermissions } = await import('./permissions');
-	const { createSettings } = await import('./settings');
-	await import('./lib/unit');
-
-	Meteor.startup(() => {
-		void createSettings();
-		void createPermissions();
-		void createDefaultPriorities();
-	});
+Meteor.startup(() => {
+	void createSettings();
+	void createPermissions();
+	void createDefaultPriorities();
 });

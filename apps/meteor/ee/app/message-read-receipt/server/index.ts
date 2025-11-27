@@ -1,5 +1,2 @@
-import { License } from '@rocket.chat/license';
-
-await License.onLicense('message-read-receipt', async () => {
-	await import('./hooks');
-});
+// Enterprise features always enabled - use static imports
+import './hooks';

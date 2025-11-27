@@ -1,10 +1,6 @@
-import { License } from '@rocket.chat/license';
-
+// Enterprise features always enabled - use static imports
+import '../lib/audit/methods';
+import '../api/audit';
 import { createPermissions } from '../lib/audit/startup';
 
-await License.onLicense('auditing', async () => {
-	await import('../lib/audit/methods');
-	await import('../api/audit');
-
-	await createPermissions();
-});
+void createPermissions();
