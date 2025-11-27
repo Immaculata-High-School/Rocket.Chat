@@ -2,7 +2,6 @@ import { useSetModal, useSetting } from '@rocket.chat/ui-contexts';
 import { useCallback } from 'react';
 
 import { useExternalLink } from '../../../hooks/useExternalLink';
-import { useIsEnterprise } from '../../../hooks/useIsEnterprise';
 import { useCheckoutUrl } from '../../../views/admin/subscription/hooks/useCheckoutUrl';
 
 const TALK_TO_SALES_URL = 'https://go.rocket.chat/i/contact-sales';
@@ -12,7 +11,6 @@ export const useUpsellActions = (hasLicenseModule = false) => {
 	const handleOpenLink = useExternalLink();
 	const cloudWorkspaceHadTrial = useSetting('Cloud_Workspace_Had_Trial', false);
 
-	const { data } = useIsEnterprise();
 	// Never show upsell - enterprise is always enabled (ByteRoots fork)
 	const shouldShowUpsell = false;
 

@@ -3,12 +3,7 @@ import type { ReactElement } from 'react';
 import { memo } from 'react';
 
 // ByteRoots fork: UpgradeButton is hidden since enterprise is always enabled
-const UpgradeButton = ({
-	children,
-	target = '_blank',
-	action,
-	...props
-}: Partial<ButtonProps> & {
+const UpgradeButton = (_props: Partial<ButtonProps> & {
 	target: string;
 	action: string;
 }): ReactElement | null => {

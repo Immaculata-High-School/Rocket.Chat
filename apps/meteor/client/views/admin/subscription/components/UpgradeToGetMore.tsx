@@ -9,7 +9,7 @@ type UpgradeToGetMoreProps = {
 };
 
 // ByteRoots fork: All enterprise modules are always enabled, never show upgrade content
-const UpgradeToGetMore = ({ children }: UpgradeToGetMoreProps) => {
+const UpgradeToGetMore = ({ children }: Pick<UpgradeToGetMoreProps, 'children'>) => {
 	return (
 		<ButtonGroup large vertical>
 			{children}

@@ -10,7 +10,9 @@ import type {
 	LicenseValidationOptions,
 	LimitContext,
 	LicenseModule,
+	GrantedModules,
 } from '@rocket.chat/core-typings';
+import { CoreModules } from '@rocket.chat/core-typings';
 import { Emitter } from '@rocket.chat/emitter';
 
 import type { getAppsConfig, getMaxActiveUsers, getUnmodifiedLicenseAndModules } from './deprecated';
@@ -540,7 +542,7 @@ export abstract class LicenseManager extends Emitter<LicenseEvents> {
 					required: false,
 				},
 			},
-			grantedModules: activeModules.map((module) => ({ module, external: false as const })),
+			grantedModules: CoreModules.map((module) => ({ module, external: false as const })) as GrantedModules,
 			limits: {
 				activeUsers: [{ max: -1, behavior: 'prevent_action' }],
 				guestUsers: [{ max: -1, behavior: 'prevent_action' }],
