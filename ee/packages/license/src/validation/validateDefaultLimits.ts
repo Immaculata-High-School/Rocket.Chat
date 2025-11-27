@@ -6,6 +6,7 @@ import { validateLimits } from './validateLimits';
 export const defaultLimits: {
 	privateApps: LicenseLimit[];
 	marketplaceApps: LicenseLimit[];
+	activeUsers: LicenseLimit[];
 	// monthlyActiveContacts?: LicenseLimit[];
 } = {
 	privateApps: [
@@ -18,6 +19,12 @@ export const defaultLimits: {
 		{
 			behavior: 'prevent_action',
 			max: -1,
+		},
+	],
+	activeUsers: [
+		{
+			behavior: 'prevent_action',
+			max: 200000,
 		},
 	],
 };

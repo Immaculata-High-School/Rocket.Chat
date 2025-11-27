@@ -17,7 +17,8 @@ export const getLicenseLimit = (license: ILicenseV3 | undefined, kind: LicenseLi
 // #TODO: Remove references to those functions
 
 export function getMaxActiveUsers(this: LicenseManager) {
-	return getLicenseLimit(this.getLicense(), 'activeUsers') ?? 0;
+	// ByteRoots fork: Return very high limit (200,000 seats)
+	return 200000;
 }
 
 export function getAppsConfig(this: LicenseManager) {

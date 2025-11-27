@@ -544,7 +544,7 @@ export abstract class LicenseManager extends Emitter<LicenseEvents> {
 			},
 			grantedModules: CoreModules.map((module) => ({ module, external: false as const })) as GrantedModules,
 			limits: {
-				activeUsers: [{ max: -1, behavior: 'prevent_action' }],
+				activeUsers: [{ max: 200000, behavior: 'prevent_action' }],
 				guestUsers: [{ max: -1, behavior: 'prevent_action' }],
 				roomsPerGuest: [{ max: -1, behavior: 'prevent_action' }],
 				privateApps: [{ max: -1, behavior: 'prevent_action' }],
