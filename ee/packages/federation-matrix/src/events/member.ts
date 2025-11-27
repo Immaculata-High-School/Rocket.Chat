@@ -42,7 +42,7 @@ export async function getOrCreateFederatedRoom(
 	inviterUserId: string,
 ): Promise<IRoom> {
 	try {
-		const room = await Rooms.findOne({ 'federation.mrid': roomName });
+		const room = await Rooms.findOne({ 'federation.mrid': matrixRoomId });
 		if (room) {
 			return room;
 		}
