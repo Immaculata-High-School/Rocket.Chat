@@ -201,21 +201,3 @@ callbacks.add(
 	callbacks.priority.HIGH,
 	'federation-matrix-after-create-direct-room',
 );
-
-beforeAddUserToRoom.add(
-	async ({ user, inviter }, room) => {
-		if (!user.username || !inviter) {
-			return;
-		}
-
-		if (FederationActions.shouldPerformFederationAction(room)) {
-			if (!(await Authorization.hasPermission(user._id, 'access-federation'))) {
-				throw new Meteor.Error('error-not-authorized-federation', 'Not authorized to access federation');
-			}
-
-			await FederationMatrix.inviteUsersToRoom(room, [user.username], inviter);
-		}
-	},
-	callbacks.priority.MEDIUM,
-	'native-federation-on-before-add-users-to-room',
-);
