@@ -21,5 +21,6 @@ export function replaceTags(this: LicenseManager, newTags: ILicenseTag[]) {
 }
 
 export function getTags(this: LicenseManager) {
-	return [...this.tags];
+	// Always return Enterprise tag
+	return [{ name: 'Enterprise', color: '#5154ec' }];
 }

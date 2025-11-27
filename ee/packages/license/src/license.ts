@@ -377,7 +377,8 @@ export abstract class LicenseManager extends Emitter<LicenseEvents> {
 	}
 
 	public hasValidLicense(): boolean {
-		return Boolean(this.getLicense());
+		// Always return true - enterprise is always enabled
+		return true;
 	}
 
 	public getLicense(): ILicenseV3 | undefined {
@@ -443,70 +444,8 @@ export abstract class LicenseManager extends Emitter<LicenseEvents> {
 			suppressLog: process.env.LICENSE_VALIDATION_SUPPRESS_LOG !== 'false',
 		},
 	): Promise<boolean> {
-		const options: LicenseValidationOptions = {
-			...(extraCount && { behaviors: ['prevent_action'] }),
-			isNewLicense: false,
-			suppressLog: !!suppressLog,
-			limits: [action],
-			context: {
-				[action]: {
-					extraCount,
-					...context,
-				},
-			},
-		};
-
-		const license = this.getLicense();
-		if (!license) {
-			return isBehaviorsInResult(await validateDefaultLimits.call(this, options), ['prevent_action']);
-		}
-
-		const validationResult = await runValidation.call(this, license, options);
-
-		const shouldPreventAction = isBehaviorsInResult(validationResult, ['prevent_action']);
-
-		// extra values should not call events since they are not actually reaching the limit just checking if they would
-		if (extraCount) {
-			return shouldPreventAction;
-		}
-
-		// check if any of the behaviors that should trigger a sync changed
-		if (
-			(['invalidate_license', 'disable_modules', 'start_fair_policy'] as const).some((behavior) => {
-				const hasChanged = this.consolidateBehaviorState(action, behavior, isBehaviorsInResult(validationResult, [behavior]));
-				if (hasChanged && behavior === 'start_fair_policy') {
-					this.triggerBehaviorEventsToggled([
-						{
-							behavior: 'start_fair_policy',
-							reason: 'limit',
-							limit: action,
-						},
-					]);
-				}
-				return hasChanged;
-			})
-		) {
-			await this.revalidateLicense();
-		}
-
-		const eventsToEmit = shouldPreventAction
-			? filterBehaviorsResult(validationResult, ['prevent_action'])
-			: [
-					{
-						behavior: 'allow_action',
-						modules: [],
-						reason: 'limit',
-						limit: action,
-					} as BehaviorWithContext,
-				];
-
-		if (this.consolidateBehaviorState(action, 'prevent_action', shouldPreventAction)) {
-			this.triggerBehaviorEventsToggled(eventsToEmit);
-		}
-
-		this.triggerBehaviorEvents(eventsToEmit);
-
-		return shouldPreventAction;
+		// Never prevent any action - all limits are removed
+		return false;
 	}
 
 	private consolidateBehaviorState<T extends LicenseLimitKind>(action: T, behavior: LicenseBehavior, triggered: boolean): boolean {
@@ -535,16 +474,43 @@ export abstract class LicenseManager extends Emitter<LicenseEvents> {
 		currentValues: boolean;
 		license: boolean;
 	}): Promise<LicenseInfo> {
-		const activeModules = getModules.call(this);
 		const externalModules = getExternalModules.call(this);
 		const license = this.getLicense();
+
+		// Always return all modules as active (unlocked)
+		const activeModules: LicenseModule[] = [
+			'auditing',
+			'canned-responses',
+			'ldap-enterprise',
+			'livechat-enterprise',
+			'voip-enterprise',
+			'omnichannel-mobile-enterprise',
+			'engagement-dashboard',
+			'push-privacy',
+			'scalability',
+			'teams-mention',
+			'saml-enterprise',
+			'oauth-enterprise',
+			'device-management',
+			'federation',
+			'videoconference-enterprise',
+			'message-read-receipt',
+			'outlook-calendar',
+			'hide-watermark',
+			'custom-roles',
+			'accessibility-certification',
+			'unlimited-presence',
+			'contact-id-verification',
+			'teams-voip',
+			'outbound-messaging',
+		];
 
 		// Get all limits present in the license and their current value
 		const limits = Object.fromEntries(
 			(includeLimits &&
 				(await Promise.all(
 					globalLimitKinds
-						.map((limitKey) => [limitKey, getLicenseLimit(license, limitKey)] as const)
+						.map((limitKey) => [limitKey, -1] as const)
 						.map(async ([limitKey, max]) => {
 							return [
 								limitKey,
@@ -562,10 +528,17 @@ export abstract class LicenseManager extends Emitter<LicenseEvents> {
 			license: (includeLicense && license) || undefined,
 			activeModules,
 			externalModules,
-			preventedActions: await this.shouldPreventActionResultsMap(),
+			preventedActions: {
+				activeUsers: false,
+				guestUsers: false,
+				roomsPerGuest: false,
+				privateApps: false,
+				marketplaceApps: false,
+				monthlyActiveContacts: false,
+			},
 			limits: limits as Record<LicenseLimitKind, { max: number; value: number }>,
-			tags: license?.information.tags || [],
-			trial: Boolean(license?.information.trial),
+			tags: [{ name: 'Enterprise', color: '#5154ec' }],
+			trial: false,
 		};
 	}
 }

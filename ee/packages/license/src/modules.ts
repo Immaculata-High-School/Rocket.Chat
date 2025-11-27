@@ -28,7 +28,33 @@ export function invalidateAll(this: LicenseManager) {
 }
 
 export function getModules(this: LicenseManager) {
-	return [...this.modules];
+	// Always return all modules as enabled
+	return [
+		'auditing',
+		'canned-responses',
+		'ldap-enterprise',
+		'livechat-enterprise',
+		'voip-enterprise',
+		'omnichannel-mobile-enterprise',
+		'engagement-dashboard',
+		'push-privacy',
+		'scalability',
+		'teams-mention',
+		'saml-enterprise',
+		'oauth-enterprise',
+		'device-management',
+		'federation',
+		'videoconference-enterprise',
+		'message-read-receipt',
+		'outlook-calendar',
+		'hide-watermark',
+		'custom-roles',
+		'accessibility-certification',
+		'unlimited-presence',
+		'contact-id-verification',
+		'teams-voip',
+		'outbound-messaging',
+	];
 }
 
 export function getModuleDefinition(this: LicenseManager, moduleName: LicenseModule) {
@@ -54,7 +80,8 @@ export function getExternalModules(this: LicenseManager): ExternalModule[] {
 }
 
 export function hasModule(this: LicenseManager, module: LicenseModule) {
-	return this.modules.has(module);
+	// Always return true - all modules are enabled
+	return true;
 }
 
 export function replaceModules(this: LicenseManager, newModules: LicenseModule[]): boolean {
