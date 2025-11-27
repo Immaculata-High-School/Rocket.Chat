@@ -1,20 +1,12 @@
-import { License } from '@rocket.chat/license';
-
 import { addSettings } from '../settings/deviceManagement';
+import { createPermissions, createEmailTemplates } from '../lib/deviceManagement/startup';
+import { listenSessionLogin } from '../lib/deviceManagement/session';
 
-let stopListening: (() => void) | undefined;
-License.onToggledFeature('device-management', {
-	up: async () => {
-		const { createPermissions, createEmailTemplates } = await import('../lib/deviceManagement/startup');
-		const { listenSessionLogin } = await import('../lib/deviceManagement/session');
-
-		await addSettings();
-		await createPermissions();
-		await createEmailTemplates();
-		stopListening = await listenSessionLogin();
-	},
-	down: async () => {
-		stopListening?.();
-		stopListening = undefined;
-	},
-});
+// Since enterprise features are always enabled, initialize directly without dynamic imports
+// This avoids Meteor's "Nested imports can not import an async module" error
+void (async () => {
+	await addSettings();
+	await createPermissions();
+	await createEmailTemplates();
+	await listenSessionLogin();
+})();
